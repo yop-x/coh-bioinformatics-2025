@@ -27,6 +27,11 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             "name", "score", "RNA_strand", "DNA_strand"
         ]
         
+        #select only the relevant columns
+        df = df[['RNA_chr', 'RNA_start', 'RNA_end', 'DNA_chr', 'DNA_start', 'DNA_end']]
+        
+        df[['RNA_start', 'RNA_end', 'DNA_start', 'DNA_end']] = df[['RNA_start', 'RNA_end', 'DNA_start', 'DNA_end']].astype(int)
+        
         
         # left join RNA names with hg38 reference 
         rna_annot = genes.rename(columns={
@@ -34,12 +39,29 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
         'Start'     :'RNA_start',
         'End'       :'RNA_end',
         'gene_name' :'RNA_gene_name'})
-    
-        df = df.merge(
-            rna_annot,
-            how = 'left',
-            on = ['RNA_chr', 'RNA_start', 'RNA_end']
+        
+        rna_annot[['RNA_start', 'RNA_end']] = rna_annot[['RNA_start', 'RNA_end']].astype(int)
+        
+        q = df.copy()
+        a = rna_annot.copy()
+        
+        pr_q = pr.PyRanges(q)
+        pr_a = pr.PyRanges(a)
+        
+        joined = pr_q.join(pr_a, how='left')
+        
+        jdf=joined.df
+        
+        contained = jdf[(jdf['RNA_start']>= jdf['RNA_start_b']) & (jdf['RNA_end'] <= jdf['RNA_end_b'])] 
+        
+        contained['container_len'] = contained['RNA_end_b'] - contained['RNA_start_b']
+        best = (contained
+                .sort_values(['RNA_chr', 'RNA_start', 'RNA_end', 'container_len'])
+                .drop_duplicates(subset = ['RNA_chr', 'RNA_start', 'RNA_end'], keep='first')
         )
+        
+        df = (q.merge(best[['RNA_chr', 'RNA_start', 'RNA_end', 'container_len']],
+                      on = ['RNA_chr', 'RNA_start', 'RNA_end'], how = 'left')) 
         
         # doing the same for DNA names 
         dna_annot = genes.rename(columns={
@@ -48,11 +70,29 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             'End'       :'DNA_end',
             'gene_name' :'DNA_gene_name'})
         
-        df = df.merge(
-            dna_annot,
-            how = 'left',
-            on = ['DNA_chr', 'DNA_start', 'DNA_end']
+        dna_annot[['DNA_start', 'DNA_end']] = dna_annot[['DNA_start', 'DNA_end']].astype(int)
+        
+        q = df.copy()
+        a = dna_annot.copy()
+        
+        pr_q = pr.PyRanges(q)
+        pr_a = pr.PyRanges(a)
+        
+        joined = pr_q.join(pr_a, how='left')
+        
+        jdf=joined.df
+        
+        contained = jdf[(jdf['DNA_start']>= jdf['DNA_start_b']) & (jdf['DNA_end'] <= jdf['DNA_end_b'])] 
+        
+        contained['container_len'] = contained['DNA_end_b'] - contained['DNA_start_b']
+        best = (contained
+                .sort_values(['DNA_chr', 'DNA_start', 'DNA_end', 'container_len'])
+                .drop_duplicates(subset = ['DNA_chr', 'DNA_start', 'DNA_end'], keep='first')
         )
+        
+        df = (q.merge(best[['DNA_chr', 'DNA_start', 'DNA_end', 'container_len']],
+                      on = ['DNA_chr', 'DNA_start', 'DNA_end'], how = 'left'))
+        
         
         
         # when query is DNA_coordinate 
@@ -191,8 +231,8 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             ) / len(sample_values)
             
             # setting the matchin pattern to be
-            # at least 70% matching 
-            if match_ratio > 0.7:
+            # at least 50% matching 
+            if match_ratio > 0.5:
                 gene_info_cols.append(col)
             
             
