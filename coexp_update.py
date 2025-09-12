@@ -27,33 +27,79 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             "name", "score", "RNA_strand", "DNA_strand"
         ]
         
+        df = df.rename(columns={
+            'RNA_chr':'Chromosome',
+            'RNA_start':'Start',
+            'RNA_end':'End'
+        })
+        
+        df = df[['Chromosome','Start','End', 'DNA_chr', 'DNA_start', 'DNA_end']]
+        
         
         # left join RNA names with hg38 reference 
-        rna_annot = genes.rename(columns={
-        'Chromosome':'RNA_chr',
-        'Start'     :'RNA_start',
-        'End'       :'RNA_end',
-        'gene_name' :'RNA_gene_name'})
-    
-        df = df.merge(
-            rna_annot,
-            how = 'left',
-            on = ['RNA_chr', 'RNA_start', 'RNA_end']
-        )
         
+        
+        pr_df = pr.PyRanges(df)
+        pr_genes = pr.PyRanges(genes)
+        
+        joined = pr_df.join(pr_rna, how='left')
+        jdf = joined.df
+        
+        contained = jdf[(jdf["Start"] >= jdf["Start_b"]) & (jdf["End"] <= jdf["End_b"])]
+        contained["container_len"] = contained["End_b"] - contained["Start_b"]
+        
+        best = (contained
+        .sort_values(["Chromosome","Start","End","container_len"])
+        .drop_duplicates(subset=["Chromosome","Start","End"], keep = 'first'))
+        
+        out = df.merge(best[["Chromosome","Start","End","gene_name"]],
+               on=["Chromosome","Start","End"], how="left")
+          
+          
+          
+          
+        
+          
+          
         # doing the same for DNA names 
-        dna_annot = genes.rename(columns={
-            'Chromosome':'DNA_chr',
-            'Start'     :'DNA_start',
-            'End'       :'DNA_end',
-            'gene_name' :'DNA_gene_name'})
+        out = out.rename(columns={
+            'Chromosome' : 'RNA_chr',
+            'Start' : 'RNA_start',
+            'End' : 'RNA_end',
+            'gene_name' : 'RNA_gene_name'
+        })
         
-        df = df.merge(
-            dna_annot,
-            how = 'left',
-            on = ['DNA_chr', 'DNA_start', 'DNA_end']
-        )
         
+        out = out.rename(columns={
+            'DNA_chr' : 'Chromosome',
+            'DNA_start' : 'Start',
+            'DNA_end' : 'End',
+        })
+        
+        out_dna = out[['Chromosome', 'Start', 'End']]
+        
+        pr_dna = pr.PyRanges(out_dna)
+        
+        joined = pr_dna.join(pr_genes, how='left')
+        
+        jdf = joined.df
+        contained = contained = jdf[(jdf['Start']>= jdf['Start_b']) & (jdf['End']<= jdf['End_b'])]
+        contained['container_len'] = contained['End_b'] - contained['Start_b']
+        
+        best = (contained
+        .sort_values(['Chromosome', 'Start', 'End', 'container_len'])
+        .drop_duplicates(subset=['Chromosome', 'Start', 'End'], keep='first'))
+        
+        
+        
+        out2 = out2 = out.merge(best[['Chromosome', 'Start', 'End', 'gene_name']],
+               on=['Chromosome', 'Start', 'End'], how='left') 
+        
+        out2 = out2.rename(columns={
+            'gene_name' : 'DNA_gene_name'
+        })
+        
+        df = out2
         
         # when query is DNA_coordinate 
         if query[:3]== 'chr':
@@ -70,28 +116,16 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             (df['RNA_end'] >= query_start)
             ]
             
-            # add 'DNA_coord'
-            query_df['DNA_coord'] = (
-                query_df['DNA_chr'].astype(str)
-                + ':'
-                + query_df['DNA_start'].astype(str)
-                + '-'
-                + query_df['DNA_end'].astype(str)
-            )
-            
-            # due to lack of time/effort
-            # for now only checking the 
-            # occurances of different 'DNA_start' to showcase vc 
-        
-            vc = query_df[['RNA_chr', 'DNA_coord']].value_counts().reset_index(name='count')
+            vc = query_df['DNA_gene_name'].value_counts().reset_index(name='count')
             vc = vc.sort_values(by='count', ascending=False).head(100)
-            
+        
             G = nx.Graph()
             G.add_node(query)
 
             for _, row in vc.iterrows():
-                dna_label = row['DNA_coord']
+                dna_label = f"{row['DNA_gene_name']}"
                 G.add_node(dna_label, count=row['count'])
+
                 G.add_edge(query, dna_label, weight=row['count'])
 
             plt.figure(figsize=(14, 12))
@@ -112,6 +146,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                         node_colors.append('orange')  # Highlight color
                     else:
                         node_colors.append('skyblue')  # Default
+
                 
         # when query is RNA_gene_name    
         else:
