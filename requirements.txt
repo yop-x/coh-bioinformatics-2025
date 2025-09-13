@@ -1,0 +1,5 @@
+numpy>=1.26,<2.0
+pandas>=2.2,<3.0
+networkx>=3.2,<4.0
+matplotlib>=3.8,<4.0
+pyranges>=0.0.129
