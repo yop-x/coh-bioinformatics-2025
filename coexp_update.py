@@ -129,51 +129,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             (df['RNA_end'] >= query_start)
             ]
             
-            query_df = build_norm_one_file(query_df)[0]
-            
-            vc = (query_df[["DNA_gene_name", "EPM"]]
-                  .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
-                  .rename(columns={"EPM": "count"})
-                  .sort_values(by="count", ascending=False)
-                  .head(200))
-            
-            G = nx.Graph()
-            G.add_node(query)
-            
-            
-            for _, row in vc.iterrows():
-                dna_label = f"{row['DNA_gene_name']}"
-                G.add_node(dna_label, count=row['count'])
-                G.add_edge(query, dna_label, weight=row['count'])
-
-            plt.figure(figsize=(14, 12))
-            pos = nx.spring_layout(G, k=0.6, seed=42)
-
-            node_size_query = 500 
-            node_size_other = 120 
-            
-            node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
-            node_colors = [
-                'red' if n == query
-                else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
-                for n in G.nodes()
-            ]
-
-            
-
-            nx.draw(
-                G, pos,
-                with_labels=True,
-                node_size=node_sizes,
-                node_color=node_colors,
-                edge_color='gray',
-                font_size=8
-            )
-
-            plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
-            plt.axis('off')
-            plt.tight_layout()
-            plt.show()
+            RNA_gene_name = query_df['RNA_gene_name'].value_counts().index[0]
             
         # when query is RNA_gene_name    
         else:
@@ -181,54 +137,56 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                 print(f'Sorry, gene name {query} not found in dataset.')
                 
             else:
-                query_df = df[df['RNA_gene_name'] == query]
-                
-                query_df = build_norm_one_file(query_df)[0]
-                
-                
-                vc = (query_df[["DNA_gene_name", "EPM"]]
-                      .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
-                      .rename(columns={"EPM": "count"})
-                      .sort_values(by="count", ascending=False)
-                      .head(200))
-            
-                G = nx.Graph()
-                G.add_node(query)
-                
-                
-                for _, row in vc.iterrows():
-                    dna_label = f"{row['DNA_gene_name']}"
-                    G.add_node(dna_label, count=row['count'])
-                    G.add_edge(query, dna_label, weight=row['count'])
+                RNA_gene_name = query 
+        
+        query_df = build_norm_one_file(df)[0]
+        query_df = query_df[query_df['RNA_gene_name'] == RNA_gene_name]
+        
+        
+        
+        vc = (query_df[["DNA_gene_name", "EPM"]]
+                .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
+                .rename(columns={"EPM": "count"})
+                .sort_values(by="count", ascending=False)
+                .head(200))
+    
+        G = nx.Graph()
+        G.add_node(query)
+        
+        
+        for _, row in vc.iterrows():
+            dna_label = f"{row['DNA_gene_name']}"
+            G.add_node(dna_label, count=row['count'])
+            G.add_edge(query, dna_label, weight=row['count'])
 
-                plt.figure(figsize=(14, 12))
-                pos = nx.spring_layout(G, k=0.6, seed=42)
+        plt.figure(figsize=(14, 12))
+        pos = nx.spring_layout(G, k=0.6, seed=42)
 
-                node_size_query = 500 
-                node_size_other = 120 
-                
-                node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
-                node_colors = [
-                    'red' if n == query
-                    else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
-                    for n in G.nodes()
-                ]
+        node_size_query = 500 
+        node_size_other = 120 
+        
+        node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
+        node_colors = [
+            'red' if n == query
+            else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
+            for n in G.nodes()
+        ]
 
-                
+        
 
-                nx.draw(
-                    G, pos,
-                    with_labels=True,
-                    node_size=node_sizes,
-                    node_color=node_colors,
-                    edge_color='gray',
-                    font_size=8
-                )
+        nx.draw(
+            G, pos,
+            with_labels=True,
+            node_size=node_sizes,
+            node_color=node_colors,
+            edge_color='gray',
+            font_size=8
+        )
 
-                plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
-                plt.axis('off')
-                plt.tight_layout()
-                plt.show()
+        plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
+        plt.axis('off')
+        plt.tight_layout()
+        plt.show()
 
         
     # if feeding the dataset with gene info already 
@@ -307,51 +265,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             (df['RNA_end'] >= query_start)
             ]
             
-            query_df = build_norm_one_file(query_df)[0]
-            
-            vc = (query_df[["DNA_gene_name", "EPM"]]
-                  .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
-                  .rename(columns={"EPM": "count"})
-                  .sort_values(by="count", ascending=False)
-                  .head(200))
-            
-            G = nx.Graph()
-            G.add_node(query)
-            
-            
-            for _, row in vc.iterrows():
-                dna_label = f"{row['DNA_gene_name']}"
-                G.add_node(dna_label, count=row['count'])
-                G.add_edge(query, dna_label, weight=row['count'])
-
-            plt.figure(figsize=(14, 12))
-            pos = nx.spring_layout(G, k=0.6, seed=42)
-
-            node_size_query = 500 
-            node_size_other = 120 
-            
-            node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
-            node_colors = [
-                'red' if n == query
-                else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
-                for n in G.nodes()
-            ]
-
-            
-
-            nx.draw(
-                G, pos,
-                with_labels=True,
-                node_size=node_sizes,
-                node_color=node_colors,
-                edge_color='gray',
-                font_size=8
-            )
-
-            plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
-            plt.axis('off')
-            plt.tight_layout()
-            plt.show()
+            RNA_gene_name = query_df['RNA_gene_name'].value_counts().index[0]
             
             
         # if the query is RNA_gene_name   
@@ -360,51 +274,53 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                 print(f'Sorry, gene name {query} not found in dataset.')
                 
             else:
+                RNA_gene_name = query
                 
-                query_df = df[df['RNA_gene_name'] == query]
-                
-                query_df = build_norm_one_file(query_df)[0]
-                
-                vc = (query_df[["DNA_gene_name", "EPM"]]
-                      .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
-                      .rename(columns={"EPM": "count"})
-                      .sort_values(by="count", ascending=False)
-                      .head(200))
-            
-                G = nx.Graph()
-                G.add_node(query)
+        query_df = build_norm_one_file(df)[0]
+        query_df = query_df[query_df['RNA_gene_name'] == RNA_gene_name]
+        
                 
                 
-                for _, row in vc.iterrows():
-                    dna_label = f"{row['DNA_gene_name']}"
-                    G.add_node(dna_label, count=row['count'])
-                    G.add_edge(query, dna_label, weight=row['count'])
+        vc = (query_df[["DNA_gene_name", "EPM"]]
+                .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
+                .rename(columns={"EPM": "count"})
+                .sort_values(by="count", ascending=False)
+                .head(200))
+    
+        G = nx.Graph()
+        G.add_node(query)
+        
+        
+        for _, row in vc.iterrows():
+            dna_label = f"{row['DNA_gene_name']}"
+            G.add_node(dna_label, count=row['count'])
+            G.add_edge(query, dna_label, weight=row['count'])
 
-                plt.figure(figsize=(14, 12))
-                pos = nx.spring_layout(G, k=0.6, seed=42)
+        plt.figure(figsize=(14, 12))
+        pos = nx.spring_layout(G, k=0.6, seed=42)
 
-                node_size_query = 500 
-                node_size_other = 120 
-                
-                node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
-                node_colors = [
-                    'red' if n == query
-                    else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
-                    for n in G.nodes()
-                ]
+        node_size_query = 500 
+        node_size_other = 120 
+        
+        node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
+        node_colors = [
+            'red' if n == query
+            else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
+            for n in G.nodes()
+        ]
 
-                
+        
 
-                nx.draw(
-                    G, pos,
-                    with_labels=True,
-                    node_size=node_sizes,
-                    node_color=node_colors,
-                    edge_color='gray',
-                    font_size=8
-                )
+        nx.draw(
+            G, pos,
+            with_labels=True,
+            node_size=node_sizes,
+            node_color=node_colors,
+            edge_color='gray',
+            font_size=8
+        )
 
-                plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
-                plt.axis('off')
-                plt.tight_layout()
-                plt.show()
+        plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
+        plt.axis('off')
+        plt.tight_layout()
+        plt.show()
