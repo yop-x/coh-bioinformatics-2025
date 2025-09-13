@@ -132,10 +132,10 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             query_df = build_norm_one_file(query_df)[0]
             
             vc = (query_df[["DNA_gene_name", "EPM"]]
-                .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
-                .rename(columns={"EPM": "count"})
-                .sort_values(by="count", ascending=False)
-                .head(100))
+                  .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
+                  .rename(columns={"EPM": "count"})
+                  .sort_values(by="count", ascending=False)
+                  .head(200))
             
             G = nx.Graph()
             G.add_node(query)
@@ -149,21 +149,17 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             plt.figure(figsize=(14, 12))
             pos = nx.spring_layout(G, k=0.6, seed=42)
 
-            node_sizes = []
-            node_colors = []
+            node_size_query = 500 
+            node_size_other = 120 
+            
+            node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
+            node_colors = [
+                'red' if n == query
+                else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
+                for n in G.nodes()
+            ]
 
-            for node in G.nodes():
-                if node == query:
-                    node_sizes.append(800)
-                    node_colors.append('red')
-                else:
-                    count = G.nodes[node].get("count", 1)  # this is EPM now
-                    node_sizes.append(100 + count * 10)
-                    # Treat 'freq' as an EPM threshold
-                    node_colors.append('orange' if count > freq else 'skyblue')
-
-            plt.figure(figsize=(14, 12))
-            pos = nx.spring_layout(G, k=0.6, seed=42)
+            
 
             nx.draw(
                 G, pos,
@@ -176,6 +172,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
 
             plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
             plt.axis('off')
+            plt.tight_layout()
             plt.show()
             
         # when query is RNA_gene_name    
@@ -190,38 +187,34 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                 
                 
                 vc = (query_df[["DNA_gene_name", "EPM"]]
-                .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
-                .rename(columns={"EPM": "count"})
-                .sort_values(by="count", ascending=False)
-                .head(100))
-
+                      .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
+                      .rename(columns={"EPM": "count"})
+                      .sort_values(by="count", ascending=False)
+                      .head(200))
+            
                 G = nx.Graph()
                 G.add_node(query)
-                                
-
+                
+                
                 for _, row in vc.iterrows():
-                    dna_label = row['DNA_gene_name']
+                    dna_label = f"{row['DNA_gene_name']}"
                     G.add_node(dna_label, count=row['count'])
                     G.add_edge(query, dna_label, weight=row['count'])
 
                 plt.figure(figsize=(14, 12))
                 pos = nx.spring_layout(G, k=0.6, seed=42)
 
-                node_sizes = []
-                node_colors = []
+                node_size_query = 500 
+                node_size_other = 120 
+                
+                node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
+                node_colors = [
+                    'red' if n == query
+                    else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
+                    for n in G.nodes()
+                ]
 
-                for node in G.nodes():
-                    if node == query:
-                        node_sizes.append(800)
-                        node_colors.append('red')
-                    else:
-                        count = G.nodes[node].get("count", 1)  # this is EPM now
-                        node_sizes.append(100 + count * 10)
-                        # Treat 'freq' as an EPM threshold
-                        node_colors.append('orange' if count > freq else 'skyblue')
-                            
-                plt.figure(figsize=(14, 12))
-                pos = nx.spring_layout(G, k=0.6, seed=42)
+                
 
                 nx.draw(
                     G, pos,
@@ -234,8 +227,8 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
 
                 plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
                 plt.axis('off')
+                plt.tight_layout()
                 plt.show()
-            
 
         
     # if feeding the dataset with gene info already 
@@ -317,14 +310,15 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             query_df = build_norm_one_file(query_df)[0]
             
             vc = (query_df[["DNA_gene_name", "EPM"]]
-                .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
-                .rename(columns={"EPM": "count"})
-                .sort_values(by="count", ascending=False)
-                .head(100))
-
+                  .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
+                  .rename(columns={"EPM": "count"})
+                  .sort_values(by="count", ascending=False)
+                  .head(200))
+            
             G = nx.Graph()
             G.add_node(query)
-
+            
+            
             for _, row in vc.iterrows():
                 dna_label = f"{row['DNA_gene_name']}"
                 G.add_node(dna_label, count=row['count'])
@@ -333,21 +327,17 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             plt.figure(figsize=(14, 12))
             pos = nx.spring_layout(G, k=0.6, seed=42)
 
-            node_sizes = []
-            node_colors = []
+            node_size_query = 500 
+            node_size_other = 120 
+            
+            node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
+            node_colors = [
+                'red' if n == query
+                else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
+                for n in G.nodes()
+            ]
 
-            for node in G.nodes():
-                if node == query:
-                    node_sizes.append(800)
-                    node_colors.append('red')
-                else:
-                    count = G.nodes[node].get("count", 1)  # this is EPM now
-                    node_sizes.append(100 + count * 10)
-                    # Treat 'freq' as an EPM threshold
-                    node_colors.append('orange' if count > freq else 'skyblue')
-
-            plt.figure(figsize=(14, 12))
-            pos = nx.spring_layout(G, k=0.6, seed=42)
+            
 
             nx.draw(
                 G, pos,
@@ -360,6 +350,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
 
             plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
             plt.axis('off')
+            plt.tight_layout()
             plt.show()
             
             
@@ -375,14 +366,15 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                 query_df = build_norm_one_file(query_df)[0]
                 
                 vc = (query_df[["DNA_gene_name", "EPM"]]
-                    .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
-                    .rename(columns={"EPM": "count"})
-                    .sort_values(by="count", ascending=False)
-                    .head(100))
-
+                      .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
+                      .rename(columns={"EPM": "count"})
+                      .sort_values(by="count", ascending=False)
+                      .head(200))
+            
                 G = nx.Graph()
                 G.add_node(query)
-
+                
+                
                 for _, row in vc.iterrows():
                     dna_label = f"{row['DNA_gene_name']}"
                     G.add_node(dna_label, count=row['count'])
@@ -391,21 +383,17 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                 plt.figure(figsize=(14, 12))
                 pos = nx.spring_layout(G, k=0.6, seed=42)
 
-                node_sizes = []
-                node_colors = []
+                node_size_query = 500 
+                node_size_other = 120 
+                
+                node_sizes = [node_size_query if n == query else node_size_other for n in G.nodes()]
+                node_colors = [
+                    'red' if n == query
+                    else ('orange' if G.nodes[n].get('count', 1)> freq else 'skyblue')
+                    for n in G.nodes()
+                ]
 
-                for node in G.nodes():
-                    if node == query:
-                        node_sizes.append(800)
-                        node_colors.append('red')
-                    else:
-                        count = G.nodes[node].get("count", 1)  # this is EPM now
-                        node_sizes.append(100 + count * 10)
-                        # Treat 'freq' as an EPM threshold
-                        node_colors.append('orange' if count > freq else 'skyblue')
-
-                plt.figure(figsize=(14, 12))
-                pos = nx.spring_layout(G, k=0.6, seed=42)
+                
 
                 nx.draw(
                     G, pos,
@@ -418,20 +406,5 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
 
                 plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
                 plt.axis('off')
+                plt.tight_layout()
                 plt.show()
-                                
-                                
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                    
