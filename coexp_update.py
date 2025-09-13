@@ -370,7 +370,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                 
             else:
                 
-                query_df = df[df['RNA_gene_name'] == query][['DNA_gene_name']]
+                query_df = df[df['RNA_gene_name'] == query]
                 
                 query_df = build_norm_one_file(query_df)[0]
                 
