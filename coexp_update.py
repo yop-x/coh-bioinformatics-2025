@@ -148,7 +148,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                 .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
                 .rename(columns={"EPM": "count"})
                 .sort_values(by="count", ascending=False)
-                .head(200))
+                .head(100))
     
         G = nx.Graph()
         G.add_node(query)
@@ -183,7 +183,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             font_size=8
         )
 
-        plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
+        plt.title(f"{RNA_gene_name} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
         plt.axis('off')
         plt.tight_layout()
         plt.show()
@@ -285,7 +285,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                 .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
                 .rename(columns={"EPM": "count"})
                 .sort_values(by="count", ascending=False)
-                .head(200))
+                .head(100))
     
         G = nx.Graph()
         G.add_node(query)
@@ -320,7 +320,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             font_size=8
         )
 
-        plt.title(f"{query} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
+        plt.title(f"{RNA_gene_name} Interaction Network (Highlighting EPM > {freq})", fontsize=16)
         plt.axis('off')
         plt.tight_layout()
         plt.show()
