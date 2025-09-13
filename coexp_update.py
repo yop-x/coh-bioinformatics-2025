@@ -129,7 +129,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             (df['RNA_end'] >= query_start)
             ]
             
-            query_df = build_norm_one_file(query_df)
+            query_df = build_norm_one_file(query_df)[0]
             
             vc = (query_df[["DNA_gene_name", "EPM"]]
                 .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
@@ -186,7 +186,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             else:
                 query_df = df[df['RNA_gene_name'] == query]
                 
-                query_df = build_norm_one_file(query_df)
+                query_df = build_norm_one_file(query_df)[0]
                 
                 
                 vc = (query_df[["DNA_gene_name", "EPM"]]
@@ -314,7 +314,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
             (df['RNA_end'] >= query_start)
             ]
             
-            query_df = build_norm_one_file(query_df) 
+            query_df = build_norm_one_file(query_df)[0]
             
             vc = (query_df[["DNA_gene_name", "EPM"]]
                 .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
@@ -372,7 +372,7 @@ def get_coexp_network_updated(query, iMARGI_files, freq):
                 
                 query_df = df[df['RNA_gene_name'] == query][['DNA_gene_name']]
                 
-                query_df = build_norm_one_file(query_df)
+                query_df = build_norm_one_file(query_df)[0]
                 
                 vc = (query_df[["DNA_gene_name", "EPM"]]
                     .groupby("DNA_gene_name", as_index=False)["EPM"].sum()
